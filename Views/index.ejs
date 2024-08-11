@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Register</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    video {
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      position: absolute;
+    }
+
+    input, button {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <video id="video" width="620" height="540" autoplay muted></video>
+  </div>
+  <div>
+    <input type="text" id="label" placeholder="Enter your name" />
+    <button id="register">Register</button>
+    <a href="/Login"><button id="login">Login</button></a>
+  </div>
+
+  <!-- Include p5.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <!-- Include ml5.js library -->
+  <script src="https://unpkg.com/ml5@1/dist/ml5.js"></script>
+  <!-- Custom script -->
+  <script>
+    let video;
+    let faceMesh;
+    let faces = [];
+    let options = { maxFaces: 1, refineLandmarks: false, flipHorizontal: false };
+
+    function preload() {
+      faceMesh = ml5.faceMesh(options);
+    }
+
+    function setup() {
+      const canvas = createCanvas(620, 540);
+      canvas.position(0, 0);
+      video = createCapture(VIDEO);
+      video.size(width, height);
+      video.hide();
+      faceMesh.detectStart(video, gotFaces);
+    }
+
+    function draw() {
+      image(video, 0, 0, width, height);
+      for (let i = 0; i < faces.length; i++) {
+        let face = faces[i];
+        for (let j = 0; j < face.keypoints.length; j++) {
+          let keypoint = face.keypoints[j];
+          fill(0, 255, 0);
+          noStroke();
+          circle(keypoint.x, keypoint.y, 5);
+        }
+      }
+    }
+
+    function gotFaces(results) {
+      faces = results;
+    }
+
+    document.getElementById('register').addEventListener('click', () => {
+      const label = document.getElementById('label').value.trim();
+      
+      if (!label) {
+        alert('Please enter a name.');
+        return;
+      }
+
+      if (faces.length > 0) {
+        // Extract face landmarks for registration
+        const landmarks = faces[0].keypoints;
+        
+        // Format landmarks for sending to the backend
+        const formattedLandmarks = landmarks.map(point => ({ x: point.x, y: point.y }));
+
+        // Send face data to the backend
+        fetch('/registerFace', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ label, landmarks: formattedLandmarks })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+          alert('Registration successful!');
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          alert('Registration failed!');
+        });
+      } else {
+        alert('No face detected for registration.');
+      }
+    });
+
+    window.preload = preload;
+    window.setup = setup;
+    window.draw = draw;
+  </script>
+</body>
+</html>
