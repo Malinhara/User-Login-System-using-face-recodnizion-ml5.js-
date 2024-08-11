@@ -10,7 +10,8 @@ const { distanceBetweenLandmarks } = require('./util');
 const THRESHOLD = 50; // Example value
 
 app.use(express.static('Public'));
-app.set('views', './Views');
+app.set('views', '../Views');
+
 app.set('view engine', 'ejs');
 
 const db = mysql.createConnection({
