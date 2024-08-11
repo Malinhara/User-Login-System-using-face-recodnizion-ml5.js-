@@ -13,7 +13,8 @@
 
 ## Example image
 
-![image](https://github.com/user-attachments/assets/f64571e7-7f53-4b32-b2e4-9cb11f2e2dc5)
+![image](https://github.com/user-attachments/assets/eb85e775-f96d-4db1-9803-6ca354933a07)
+
 
 
 # IMPORTANT: Bug Fixes
